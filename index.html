@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseñador de Globos con IA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Diseñador de Decoraciones con Globos IA</h1>
+        <p>Responde estas preguntas y nuestra IA creará un diseño visual único para tu evento.</p>
+
+        <form id="ia-form">
+            <div class="form-group">
+                <label for="event-type">Tipo de Evento:</label>
+                <select id="event-type" name="event-type" required>
+                    <option value="una boda">Boda</option>
+                    <option value="un cumpleaños">Cumpleaños</option>
+                    <option value="un baby shower">Baby Shower</option>
+                    <option value="un evento corporativo">Evento Corporativo</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="colors">Paleta de Colores (sé descriptivo):</label>
+                <input type="text" id="colors" name="colors" placeholder="Ej: tonos pastel, dorado cromado y blanco" required>
+            </div>
+
+            <div class="form-group">
+                <label for="style">Estilo General:</label>
+                <select id="style" name="style" required>
+                    <option value="elegante y lujoso">Elegante / Lujoso</option>
+                    <option value="divertido y temático">Divertido / Temático</option>
+                    <option value="moderno y minimalista">Moderno / Minimalista</option>
+                    <option value="rústico y orgánico">Rústico / Orgánico</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="extra-details">Peticiones Adicionales (opcional):</label>
+                <textarea id="extra-details" name="extra-details" rows="3" placeholder="Ej: un arco de globos para la entrada, con flores naturales intercaladas"></textarea>
+            </div>
+
+            <button type="submit" id="submit-button">Generar Diseño</button>
+        </form>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Generando tu diseño... esto puede tardar un momento.</p>
+        </div>
+
+        <div id="result-container" class="hidden">
+            <h2>¡Aquí está tu diseño!</h2>
+            <img id="result-image" src="" alt="Diseño de globos generado por IA">
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
