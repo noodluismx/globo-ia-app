@@ -1,47 +1,57 @@
 import os
 import json
-import requests
+import google.generativeai as genai
 from http.server import BaseHTTPRequestHandler
 
-# Esta es la clase que Vercel usará para ejecutar nuestra función
 class handler(BaseHTTPRequestHandler):
-
     def do_POST(self):
-        # 1. Leer el prompt que nos envía el frontend
+        # Obtener el tamaño del cuerpo de la solicitud
         content_length = int(self.headers['Content-Length'])
+        # Leer el cuerpo de la solicitud
         post_data = self.rfile.read(content_length)
-        data = json.loads(post_data)
-        prompt = data.get('prompt')
-
-        # 2. Obtener la clave de API secreta (la configuraremos en Vercel)
-        api_key = os.getenv('DEEPAI_API_KEY')
-
-        # 3. Preparar y enviar la petición a la API de DeepAI
+        
         try:
-            r = requests.post(
-                "https://api.deepai.org/api/text2img",
-                data={
-                    'text': prompt,
-                },
-                headers={'api-key': api_key}
-            )
-            
-            # Obtener la URL de la imagen de la respuesta de DeepAI
-            image_url = r.json()['output_url']
+            # Decodificar el JSON recibido
+            data = json.loads(post_data)
+            user_prompt = data.get('prompt')
 
-            # 4. Enviar una respuesta exitosa al frontend con la URL de la imagen
+            if not user_prompt:
+                self.send_response(400)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "No se recibió ningún prompt"}).encode())
+                return
+
+            # --- Lógica de Gemini ---
+            # Configurar la API Key desde las variables de entorno
+            api_key = os.getenv('GOOGLE_API_KEY')
+            if not api_key:
+                raise ValueError("La variable de entorno GOOGLE_API_KEY no está configurada.")
+            
+            genai.configure(api_key=api_key)
+
+            # Crear el modelo
+            model = genai.GenerativeModel('gemini-pro')
+            
+            # Generar contenido
+            # Modificamos el prompt para que pida una descripción en lugar de una foto
+            creative_prompt = f"Actúa como un diseñador de eventos experto. Describe con mucho detalle y de forma evocadora cómo sería la siguiente decoración. Incluye detalles sobre texturas, disposición de los globos, iluminación y el ambiente general que se crearía. La petición original es: '{user_prompt}'"
+            response = model.generate_content(creative_prompt)
+            
+            # --- Fin de la lógica de Gemini ---
+
+            # Preparar la respuesta JSON
+            response_data = json.dumps({"description": response.text})
+            
+            # Enviar respuesta exitosa
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            response = {'imageUrl': image_url}
-            self.wfile.write(json.dumps(response).encode('utf-8'))
+            self.wfile.write(response_data.encode())
 
         except Exception as e:
-            # 5. Si algo sale mal, enviar una respuesta de error
+            # Enviar respuesta de error
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            error_response = {'error': str(e)}
-            self.wfile.write(json.dumps(error_response).encode('utf-8'))
-            
-        return
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
